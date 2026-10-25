@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: MIT
-// The colour themes (README.md), read from their files: they are the current
-// build of build.js; each mode of each file sets every colour property and its
-// color-scheme; each prints as luccet.css prints; every text colour reaches its
-// family's contrast (4.5:1, 7:1 for high-contrast) against what it is drawn
-// on, and every code colour too on the code background, with 3:1
-// (high-contrast 4.5:1) on a highlighted line; a control's border is 3:1
-// against the page; text in a highlight is the text colour, so muted text and
-// links on a highlight are the checked fg-on-mark pair; each file answers
-// prefers-contrast and forced-colors as luccet.css does (engine/luccet.css);
-// and README.md lists every file.
+// The themes (README.md), read from their files. The colour themes: they are
+// the current build of build.js; each mode of each file sets every colour
+// property and its color-scheme; every text colour reaches its family's
+// contrast (4.5:1, 7:1 for high-contrast) against what it is drawn on, and
+// every code colour too on the code background, with 3:1 (high-contrast
+// 4.5:1) on a highlighted line; a control's border is 3:1 against the page;
+// each answers prefers-contrast and applies its colours to the page.
+// classic.css: its light and dark palettes pass the same contrast checks,
+// text in a highlight is the text colour, it answers prefers-contrast, and
+// its size is in rem. README.md lists every file. (Print and forced colours
+// are luccet.css's, set !important, so no theme repeats them.)
 //
 //   node test.js
 'use strict';
@@ -43,12 +44,12 @@ function modes(css) {
   };
   const top = props(css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {'))));
   const dark = at(/@media \(prefers-color-scheme: dark\)/);
-  const print = at(/@media print/);
-  if (dark) return { 'auto-light': top, 'auto-dark': { ...top, ...dark }, print };
-  return { [top['color-scheme']]: top, print };
+  if (dark) return { 'auto-light': top, 'auto-dark': { ...top, ...dark } };
+  return { [top['color-scheme']]: top };
 }
 
-const files = fs.existsSync(DIR) ? fs.readdirSync(DIR).filter((n) => n.endsWith('.css')).sort() : [];
+const files = fs.readdirSync(DIR).filter((n) => n.endsWith('.css') && n !== T.CLASSIC).sort();
+const classic = fs.readFileSync(path.join(DIR, T.CLASSIC), 'utf8');
 const family = (file) => T.FAMILIES.find((f) => file === `${f.name}.css` || file === `${f.name}-light.css` || file === `${f.name}-dark.css`);
 
 test('the stylesheets are the current build of build.js', (p) => {
@@ -60,12 +61,12 @@ test('the stylesheets are the current build of build.js', (p) => {
   for (const n of files) if (!(n in built)) p.push(`${n} is not built by build.js`);
 });
 
-test('every mode sets every colour property and its color-scheme; every file prints as luccet.css does', (p) => {
-  const print = T.printPalette();
+test('every mode sets every colour property and its color-scheme, and the colours are applied to the page', (p) => {
   for (const n of files) {
-    const m = modes(fs.readFileSync(path.join(DIR, n), 'utf8'));
+    const css = fs.readFileSync(path.join(DIR, n), 'utf8');
+    const m = modes(css);
     const want = n.endsWith('-light.css') ? ['light'] : n.endsWith('-dark.css') ? ['dark'] : null;
-    const got = Object.keys(m).filter((k) => k !== 'print');
+    const got = Object.keys(m);
     if (want && got.join() !== want.join()) p.push(`${n}: modes ${got.join(', ')}, want ${want.join(', ')}`);
     if (!want && !(got.join() === 'auto-light,auto-dark' || got.join() === 'light' || got.join() === 'dark')) p.push(`${n}: modes ${got.join(', ')}`);
     if (m['auto-light'] && m['auto-light']['color-scheme'] !== 'light dark') p.push(`${n}: color-scheme ${m['auto-light']['color-scheme']}, want "light dark"`);
@@ -73,11 +74,8 @@ test('every mode sets every colour property and its color-scheme; every file pri
       const missing = T.COLOURS.filter((k) => !/^#[0-9a-f]{3}([0-9a-f]{3})?$/.test(c[k] || ''));
       if (missing.length) p.push(`${n} (${mode}): no colour for ${missing.join(', ')}`);
     }
-    if (!m.print) p.push(`${n}: no print block`);
-    else {
-      if (m.print['color-scheme'] !== 'light') p.push(`${n}: prints with color-scheme ${m.print['color-scheme']}`);
-      for (const k of T.COLOURS) if (m.print[k] !== print[k]) p.push(`${n}: prints --t-${k} ${m.print[k]}, luccet.css ${print[k]}`);
-    }
+    if (!css.trimEnd().endsWith(T.APPLY)) p.push(`${n}: does not end with the rules that apply its colours`);
+    if (/@media print|forced-colors/.test(css)) p.push(`${n}: has a print or forced-colors block, which luccet.css sets`);
   }
 });
 
@@ -109,39 +107,39 @@ test('every text and code colour reaches its contrast against what it is drawn o
   for (const n of files) {
     const f = family(n);
     const min = (f && f.min) || 4.5;
-    for (const [mode, c] of Object.entries(modes(fs.readFileSync(path.join(DIR, n), 'utf8')))) if (mode !== 'print') pairs(`${n} (${mode})`, c, min, p);
+    for (const [mode, c] of Object.entries(modes(fs.readFileSync(path.join(DIR, n), 'utf8')))) pairs(`${n} (${mode})`, c, min, p);
   }
 });
 
-// The themes copy two blocks of the engine's stylesheet; the build reads them
-// from engine/luccet.css and throws when one is missing.
-test("engine/luccet.css's forced-colors block gives each page colour a system colour", (p) => {
-  const forced = T.forcedColors();
-  for (const k of ['bg', 'fg', 'muted', 'line', 'line-strong', 'soft', 'link', 'mark']) if (!new RegExp(`--t-${k}: [A-Z][A-Za-z]+;`).test(forced)) p.push(`forced-colors gives --t-${k} no system colour`);
-});
-
-test('every theme answers prefers-contrast (muted as the text colour, rules as the strong line) and forced-colors as luccet.css does', (p) => {
-  const forced = T.forcedColors();
+test('every theme answers prefers-contrast (muted as the text colour, rules as the strong line)', (p) => {
   for (const n of files) {
     const css = fs.readFileSync(path.join(DIR, n), 'utf8');
-    if (!css.includes(forced)) p.push(`${n}: no forced-colors block, or not luccet.css's`);
-    const m = modes(css);
     const more = css.slice(css.indexOf('@media (prefers-contrast: more)'));
     if (!more.startsWith('@media')) {
       p.push(`${n}: no prefers-contrast block`);
       continue;
     }
-    for (const [mode, c] of Object.entries(m)) {
-      if (mode === 'print') continue;
+    for (const [mode, c] of Object.entries(modes(css))) {
       const want = `:root { --t-muted: ${c.fg}; --t-line: ${c['line-strong']}; }`;
       if (!more.includes(want)) p.push(`${n} (${mode}): prefers-contrast lacks ${want}`);
     }
   }
 });
 
+test("classic.css: its light and dark palettes pass the same checks; text in a highlight is --t-fg; it answers prefers-contrast; its size is in rem", (p) => {
+  const m = modes(classic);
+  if (Object.keys(m).join() !== 'auto-light,auto-dark') p.push(`modes ${Object.keys(m).join(', ')}, want light and dark`);
+  for (const [mode, c] of Object.entries(m)) pairs(`classic.css (${mode})`, c, 4.5, p);
+  if (!/\.luccet mark, \.luccet mark a \{[^}]*color: var\(--t-fg\)/.test(classic)) p.push('.luccet mark and .luccet mark a do not set color: var(--t-fg)');
+  if (!classic.includes('@media (prefers-contrast: more)')) p.push('no prefers-contrast block');
+  // --t-size follows the reader's own size: a rem on the root is the browser's default size.
+  if (!/--t-size: [\d.]+rem;/.test(classic)) p.push('--t-size is not in rem, so a reader’s font-size setting would be ignored');
+  if (/forced-colors/.test(classic) || /@media print \{[^}]*--t-(bg|fg)/.test(classic)) p.push('it sets print or forced colours, which luccet.css sets');
+});
+
 test('README.md lists every file', (p) => {
   const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
-  for (const n of files) if (!readme.includes(`](${n})`)) p.push(`${n} is not linked from README.md's table: run node build.js`);
+  for (const n of [...files, T.CLASSIC]) if (!readme.includes(`](${n})`)) p.push(`${n} is not linked from README.md: run node build.js, or name classic.css`);
 });
 
 console.log(results.join('\n'));

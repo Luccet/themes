@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: MIT
-// Builds this repository's themes (README.md): colour themes for Luccet after
-// well-known palettes, as stylesheet add-ons that set luccet.css's colour
-// properties. A family with a light and a dark variant gives three files:
+// Builds this repository's colour themes (README.md) for Luccet, after
+// well-known palettes: stylesheet add-ons that set luccet.css's colour
+// properties and apply them to the page (its background and text, links,
+// highlights), so a theme recolours classic.css listed before it, or a plain
+// note on its own. A family with a light and a dark variant gives three files:
 // NAME.css follows the reader's system setting, NAME-light.css and
 // NAME-dark.css hold one palette for every reader. A family with one variant
-// gives NAME.css. Every file prints as luccet.css prints, black on white.
+// gives NAME.css. Print and forced colours are luccet.css's, which sets them
+// !important, so a theme need not repeat them.
 //
 // Text colours must reach the family's contrast (4.5:1, WCAG AA; 7:1 for
 // high-contrast) against what they are drawn on; code colours too, on the
@@ -13,13 +16,12 @@
 // a control's border (line-strong) 3:1 against the page. Text in a highlight
 // is the text colour (luccet.css), so the highlight is checked against fg.
 // Each file also answers prefers-contrast: more (muted text in the text
-// colour, rules in the strong line) and forced-colors (the system palette).
+// colour, rules in the strong line).
 // A palette colour that falls short is mixed toward black or white until it
 // does, and the file's header names it. test.js checks the result.
 //
-// The print palette and the forced-colors block are luccet.css's own, read
-// from engine/luccet.css, a copy of the engine's stylesheet (README.md says
-// how to update it). The README's table of themes is written here too.
+// classic.css, the reading column, the type and the default palette, is
+// written by hand. The README's table of themes is written here too.
 //
 //   node build.js           write the *.css files and README.md's table
 //   node build.js --check   exit 1 if either is not the current build (CI)
@@ -30,9 +32,9 @@ const path = require('path');
 
 const ROOT = __dirname;
 const DIR = ROOT; // the themes live at the root: gh/Luccet/themes@1/nord.css
-const ENGINE = path.join(ROOT, 'engine', 'luccet.css');
 const README = path.join(ROOT, 'README.md');
 const CDN = 'https://cdn.jsdelivr.net/gh/Luccet/themes@1';
+const CLASSIC = 'classic.css'; // written by hand
 
 // ---------------------------------------------------------------- colour
 
@@ -327,31 +329,6 @@ function resolve(v, min) {
   return { colours: out, raised, light };
 }
 
-// luccet.css's print palette: its light colours under its print overrides, so
-// that a theme prints as the base does.
-function printPalette() {
-  const css = fs.readFileSync(ENGINE, 'utf8');
-  const props = (block) => Object.fromEntries([...block.matchAll(/--t-([a-z-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
-  const block = (from) => css.slice(from, css.indexOf('}', from));
-  const light = props(block(css.indexOf(':root {')));
-  const print = props(block(css.indexOf(':root {', css.indexOf('@media print'))));
-  return Object.fromEntries(COLOURS.map((k) => [k, print[k] || light[k]]));
-}
-
-// luccet.css's forced-colors block, as it is: a theme under forced colours is
-// the system's palette, like the base.
-function forcedColors() {
-  const css = fs.readFileSync(ENGINE, 'utf8');
-  const from = css.indexOf('@media (forced-colors: active) {');
-  if (from < 0) throw new Error('engine/luccet.css has no forced-colors block');
-  let depth = 0;
-  for (let i = from; i < css.length; i++) {
-    if (css[i] === '{') depth++;
-    else if (css[i] === '}' && --depth === 0) return css.slice(from, i + 1);
-  }
-  throw new Error('engine/luccet.css: the forced-colors block is not closed');
-}
-
 // ---------------------------------------------------------------- writing
 
 // Five to a line, the page's colours then the code's.
@@ -360,6 +337,16 @@ const declarations = (c, indent) =>
     .filter((i) => i % 5 === 0)
     .map((i) => indent + COLOURS.slice(i, i + 5).map((k) => `--t-${k}: ${c[k]};`).join(' '))
     .join('\n');
+
+// The colours applied to the page, as classic.css applies them, so a theme
+// works alone on a plain note as well as after classic.css.
+const APPLY = [
+  'html { background: var(--t-bg); color: var(--t-fg); }',
+  '.luccet a { color: var(--t-link); }',
+  '.luccet mark, .luccet mark a { color: var(--t-fg); }',
+  '.luccet mark { background: var(--t-mark); }',
+].join('\n');
+
 const rootBlock = (scheme, c, indent = '') => `${indent}:root {\n${indent}  color-scheme: ${scheme};\n${declarations(c, `${indent}  `)}\n${indent}}`;
 const declarationsOnly = (c) => `  :root {\n${declarations(c, '    ')}\n  }`;
 
@@ -378,7 +365,9 @@ function sheet(family, file, mode, variants) {
   const head = [
     '/* SPDX-License-Identifier: MIT */',
     `/* ${family.title} for Luccet, after ${family.after}${family.url ? ` (${family.url})` : ''}.`,
-    `   ${MODE[mode]} Use: <script src="luccet.js" data-use="${CDN}/${file}"></script>`,
+    `   ${MODE[mode]} Use after classic.css, for its column and type:`,
+    `   <script src="luccet.js" data-use="${CDN}/classic.css ${CDN}/${file}"></script>`,
+    '   Alone, it colours a plain note: its background and text, links and highlights.',
   ];
   if (raised.length) head.push(`   Raised to ${min}:1 contrast: ${raised.join('; ')}.`);
   head.push('   Built by build.js in github.com/Luccet/themes; edit that, not this file. */');
@@ -387,13 +376,12 @@ function sheet(family, file, mode, variants) {
     body.push(rootBlock('light dark', variants.light.colours));
     body.push(`@media (prefers-color-scheme: dark) {\n${declarationsOnly(variants.dark.colours)}\n}`);
   } else body.push(rootBlock(mode, variants[mode].colours));
-  body.push(`@media print {\n${rootBlock('light', printPalette(), '  ')}\n}`);
   // More contrast: muted text in the text colour, rules in the strong line;
-  // the dark variant's under its own query. Forced colours: luccet.css's block.
+  // the dark variant's under its own query.
   const more = (c) => `:root { --t-muted: ${c.fg}; --t-line: ${c['line-strong']}; }`;
   if (mode === 'auto') body.push(`@media (prefers-contrast: more) {\n  ${more(variants.light.colours)}\n  @media (prefers-color-scheme: dark) { ${more(variants.dark.colours)} }\n}`);
   else body.push(`@media (prefers-contrast: more) {\n  ${more(variants[mode].colours)}\n}`);
-  body.push(forcedColors());
+  body.push(APPLY);
   return `${head.join('\n')}\n${body.join('\n')}\n`;
 }
 
@@ -441,7 +429,7 @@ function withTable(readme) {
 function main() {
   const files = build();
   const names = Object.keys(files);
-  const existing = fs.readdirSync(DIR).filter((n) => n.endsWith('.css'));
+  const existing = fs.readdirSync(DIR).filter((n) => n.endsWith('.css') && n !== CLASSIC);
   const readme = fs.readFileSync(README, 'utf8');
   if (process.argv.includes('--check')) {
     const stale = names.filter((n) => !existing.includes(n) || fs.readFileSync(path.join(DIR, n), 'utf8') !== files[n]);
@@ -463,6 +451,6 @@ function main() {
   console.log(`wrote ${names.length} themes and README.md's table`);
 }
 
-module.exports = { FAMILIES, PAGE, CODE, COLOURS, build, table, resolve, printPalette, forcedColors, onMark, contrast, luminance, isLight };
+module.exports = { FAMILIES, PAGE, CODE, COLOURS, APPLY, CLASSIC, build, table, resolve, onMark, contrast, luminance, isLight };
 
 if (require.main === module) main();

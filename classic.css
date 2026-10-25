@@ -1,0 +1,91 @@
+/* SPDX-License-Identifier: MIT */
+/* Classic for Luccet: the reading column, the type and the palette that luccet.css drew before 2.0,
+   when it stopped having a look of its own. Light or dark, by the reader's system setting.
+   Use: <script src="luccet.js" data-use="https://cdn.jsdelivr.net/gh/Luccet/themes@1/classic.css"></script>
+   A colour theme listed after it changes the palette and keeps the rest. Print and forced colours
+   are luccet.css's. Written by hand, not built: edit this file. */
+:root {
+  color-scheme: light dark;
+  --t-bg: #fdfdfb; --t-fg: #1f2328; --t-muted: #636c76; --t-line: #d9dde3; --t-line-strong: #767676; --t-soft: #f3f4f1;
+  --t-link: #0b62c4; --t-mark: #fff2a8; --t-error: #b3261e; --t-error-bg: #fdecea; --t-warn: #8a5300;
+  --t-code-comment: #59636e; --t-code-keyword: #cf222e; --t-code-string: #0a3069; --t-code-number: #0550ae; --t-code-function: #6639ba;
+  --t-code-type: #953800; --t-code-variable: #0550ae; --t-code-meta: #116329; --t-code-inserted: #116329; --t-code-deleted: #82071e;
+  --t-font: Charter, "Bitstream Charter", "Iowan Old Style", Georgia, serif;
+  --t-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --t-mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --t-width: 40rem; --t-size: 1.125rem; --t-leading: 1.6; /* 18px at the browser's default size, so a reader's own size setting holds */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --t-bg: #16181c; --t-fg: #dcdfe4; --t-muted: #8b949e; --t-line: #30363d; --t-line-strong: #8b949e; --t-soft: #1f2329;
+    --t-link: #6cb0ff; --t-mark: #5c4d00; --t-error: #ffb4ab; --t-error-bg: #3b1714; --t-warn: #e3b341;
+    --t-code-comment: #949da6; --t-code-keyword: #ff7b72; --t-code-string: #a5d6ff; --t-code-number: #79c0ff; --t-code-function: #d2a8ff;
+    --t-code-type: #ffa657; --t-code-variable: #79c0ff; --t-code-meta: #7ee787; --t-code-inserted: #7ee787; --t-code-deleted: #ffa198;
+  }
+}
+html { background: var(--t-bg); color: var(--t-fg); font: var(--t-size)/var(--t-leading) var(--t-font); -webkit-text-size-adjust: 100%; }
+body { margin: 0; padding: 2.5rem 1rem 6rem; }
+.luccet { max-width: var(--t-width); margin-inline: auto; hanging-punctuation: first last; }
+.luccet > :first-child { margin-block-start: 0; }
+.luccet :is(h1, h2, h3, h4, h5, h6) { font-family: var(--t-sans); line-height: 1.25; margin-block: 2em .6em; text-wrap: balance; }
+/* Body text wraps for an even rag and no stranded last word; headings balance. */
+.luccet :is(p, li, dd, blockquote, figcaption, caption, .t-title) { text-wrap: pretty; }
+.luccet h1 { font-size: 1.9rem; }
+.luccet h2 { font-size: 1.4rem; padding-block-end: .25em; border-block-end: 1px solid var(--t-line); }
+.luccet h3 { font-size: 1.15rem; }
+.luccet :is(h4, h5, h6) { font-size: 1rem; }
+.luccet :is(p, ul, ol, dl, pre, table, blockquote, figure, details), .t-block, .t-eq { margin-block: 0 1rem; margin-inline: 0; }
+.luccet a { color: var(--t-link); text-decoration-thickness: .06em; text-underline-offset: .15em; }
+.luccet :is(ul, ol) { padding-inline-start: 1.6rem; }
+.luccet li > :is(ul, ol) { margin-block-end: 0; }
+.luccet li > p { margin-block-end: .5rem; }
+.luccet hr { border: 0; border-block-start: 1px solid var(--t-line); margin-block: 2rem; }
+.luccet blockquote { padding-inline-start: 1rem; border-inline-start: 3px solid var(--t-line); color: var(--t-muted); }
+/* Text in a highlight is the text colour, whatever it was (muted, a link, which keeps its underline): the pair that is checked is fg on mark. */
+.luccet mark, .luccet mark a { color: var(--t-fg); }
+.luccet mark { background: var(--t-mark); padding-inline: .15em; border-radius: 2px; }
+
+/* Code. */
+.luccet :is(code, kbd, samp, pre) { font-family: var(--t-mono); font-size: .85em; }
+.luccet pre code { font-size: 1em; }
+.luccet :not(pre) > code { background: var(--t-soft); padding: .12em .35em; border-radius: 4px; }
+.luccet kbd { border: 1px solid var(--t-line-strong); border-block-end-width: 2px; border-radius: 4px; padding: .05em .4em; }
+.luccet pre { background: var(--t-soft); padding: .8rem 1rem; border-radius: 6px; line-height: 1.45; }
+.luccet pre[data-lines] .t-line::before { color: var(--t-muted); }
+
+/* Tables. */
+.luccet table { border-collapse: collapse; font-size: .95em; }
+.luccet :is(th, td) { border: 1px solid var(--t-line); padding: .35em .7em; }
+.luccet th { background: var(--t-soft); font-family: var(--t-sans); font-size: .9em; }
+.luccet caption { caption-side: top; text-align: start; padding-block-end: .4em; }
+
+/* Named blocks, titles and labels. */
+.t-title { font-weight: 600; margin-block-end: .4rem; }
+.luccet :is(figcaption, caption).t-title { font-weight: normal; color: var(--t-muted); font-size: .95em; }
+.luccet figcaption.t-title { margin-block: .4rem 0; }
+.t-block > :last-child, .t-cell > :last-child, .luccet blockquote > :last-child { margin-block-end: 0; }
+.luccet figure > img { display: block; margin-inline: auto; }
+.t-eqno { color: var(--t-muted); font-family: var(--t-font); }
+
+/* Footnotes and problems. */
+.t-fnref { line-height: 0; font-size: .75em; }
+.t-fnref a, .t-fnback { text-decoration: none; }
+.t-footnotes { border-block-start: 1px solid var(--t-line); margin-block-start: 3rem; padding-block-start: 1rem; font-size: .9em; }
+.luccet .t-error { font-size: .85em; }
+
+/* Print: the page's own width, and paged typesetting: no stranded lines across a page break, no heading
+   left at a page's foot, figures, equations, quotes and table rows kept whole. (Colours: luccet.css's.) */
+@media print {
+  :root { --t-size: 11pt; }
+  body { padding: 0; }
+  .luccet { max-width: none; }
+  .luccet :is(p, li, blockquote) { orphans: 3; widows: 3; }
+  .luccet :is(h1, h2, h3, h4, h5, h6) { break-after: avoid; }
+  .luccet :is(figure, figcaption, .t-eq, blockquote, tr) { break-inside: avoid; }
+}
+
+/* A reader asking for more contrast: muted text in the text colour, rules and borders in the strong line. */
+@media (prefers-contrast: more) {
+  :root { --t-muted: #1f2328; --t-line: #767676; }
+  @media (prefers-color-scheme: dark) { :root { --t-muted: #dcdfe4; --t-line: #8b949e; } }
+}
