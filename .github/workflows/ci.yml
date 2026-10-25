@@ -1,0 +1,23 @@
+# The themes are the current build of build.js, the README's table too, and
+# every one passes its contrast, print and forced-colors checks.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  themes:
+    name: the themes are current and readable
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node build.js --check
+      - run: node test.js
