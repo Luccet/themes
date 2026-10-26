@@ -25,7 +25,7 @@ Luccet CSS color themes.
 
 ## Your own theme
 
-Copy a file and change its values. To add a color theme here, add its palette to `build.js`; `classic.css` is written by hand. Then:
+Copy a file and change its values. To add a color theme here, add its palette to `build.js`; [`classic.css`](classic.css) is written by hand. Then:
 
 ```sh
 node build.js   # writes the color themes and the table above
