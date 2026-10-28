@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Classic for Luccet: the reading column, the type and the palette that luccet.css drew before 2.0,
    when it stopped having a look of its own. Light or dark, by the reader's system setting.
-   Use: <script src="luccet.js" data-use="https://cdn.jsdelivr.net/gh/Luccet/themes@1/classic.css"></script>
+   Use: <script src="luccet.js" data-use="https://cdn.luccet.dev/themes/v1/classic.css"></script>
    A colour theme listed after it changes the palette and keeps the rest. Print and forced colours
    are luccet.css's. Written by hand, not built: edit this file. */
 :root {
