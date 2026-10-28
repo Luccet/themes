@@ -2,6 +2,16 @@
 
 Luccet CSS color themes.
 
+## Loading them
+
+List [`classic.css`](classic.css), then a color theme, in a note's `data-use` (or `:::use`):
+
+```html
+<script src="luccet.js" data-use="https://cdn.luccet.dev/themes/v1/classic.css https://cdn.luccet.dev/themes/v1/nord.css"></script>
+```
+
+`v1/` is the newest 1.x release, checked for a newer one every hour; a release's own folder, such as `v1.0.0/`, never changes, and browsers keep it a year. jsDelivr serves the same tags (`https://cdn.jsdelivr.net/gh/Luccet/themes@1/nord.css`), and a copy next to the note works too.
+
 ## The themes
 
 <!-- themes -->

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* High contrast for Luccet, after black and white, for low vision.
    Light for every reader. Use after classic.css, for its column and type:
-   <script src="luccet.js" data-use="https://cdn.jsdelivr.net/gh/Luccet/themes@1/classic.css https://cdn.jsdelivr.net/gh/Luccet/themes@1/high-contrast-light.css"></script>
+   <script src="luccet.js" data-use="https://cdn.luccet.dev/themes/v1/classic.css https://cdn.luccet.dev/themes/v1/high-contrast-light.css"></script>
    Alone, it colours a plain note: its background and text, links and highlights.
    Built by build.js in github.com/Luccet/themes; edit that, not this file. */
 :root {

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Tokyo Night for Luccet, after Tokyo Night Day (light) and Night (dark) (https://github.com/folke/tokyonight.nvim).
    Light or dark, by the reader's system setting. Use after classic.css, for its column and type:
-   <script src="luccet.js" data-use="https://cdn.jsdelivr.net/gh/Luccet/themes@1/classic.css https://cdn.jsdelivr.net/gh/Luccet/themes@1/tokyo-night.css"></script>
+   <script src="luccet.js" data-use="https://cdn.luccet.dev/themes/v1/classic.css https://cdn.luccet.dev/themes/v1/tokyo-night.css"></script>
    Alone, it colours a plain note: its background and text, links and highlights.
    Raised to 4.5:1 contrast: fg, muted, line-strong, link, error, warn, code comment, code keyword, code string, code number, code function, code type, code variable, code meta, code inserted, code deleted (light); muted, line-strong, code comment, code deleted (dark).
    Built by build.js in github.com/Luccet/themes; edit that, not this file. */

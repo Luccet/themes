@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Rosé Pine for Luccet, after Rosé Pine Dawn (light) and Rosé Pine (dark) (https://rosepinetheme.com/palette/).
    Dark for every reader. Use after classic.css, for its column and type:
-   <script src="luccet.js" data-use="https://cdn.jsdelivr.net/gh/Luccet/themes@1/classic.css https://cdn.jsdelivr.net/gh/Luccet/themes@1/rose-pine-dark.css"></script>
+   <script src="luccet.js" data-use="https://cdn.luccet.dev/themes/v1/classic.css https://cdn.luccet.dev/themes/v1/rose-pine-dark.css"></script>
    Alone, it colours a plain note: its background and text, links and highlights.
    Raised to 4.5:1 contrast: line-strong, code comment, code keyword, code deleted.
    Built by build.js in github.com/Luccet/themes; edit that, not this file. */

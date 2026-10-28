@@ -31,9 +31,9 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
-const DIR = ROOT; // the themes live at the root: gh/Luccet/themes@1/nord.css
+const DIR = ROOT; // the themes live at the root: cdn.luccet.dev/themes/v1/nord.css
 const README = path.join(ROOT, 'README.md');
-const CDN = 'https://cdn.jsdelivr.net/gh/Luccet/themes@1';
+const CDN = 'https://cdn.luccet.dev/themes/v1';
 const CLASSIC = 'classic.css'; // written by hand
 
 // ---------------------------------------------------------------- colour
