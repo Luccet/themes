@@ -21,10 +21,11 @@
 // does, and the file's header names it. test.js checks the result.
 //
 // classic.css, the reading column, the type and the default palette, is
-// written by hand. The README's table of themes is written here too.
+// written by hand. The README's table of themes is written here too, and the
+// list of themes in examples/contrast.html, which links the note in each.
 //
-//   node build.js           write the *.css files and README.md's table
-//   node build.js --check   exit 1 if either is not the current build (CI)
+//   node build.js           write the *.css files, README.md's table and the example's list
+//   node build.js --check   exit 1 if any is not the current build (CI)
 'use strict';
 
 const fs = require('fs');
@@ -33,6 +34,7 @@ const path = require('path');
 const ROOT = __dirname;
 const DIR = ROOT; // the themes live at the root: cdn.luccet.dev/themes/v1/nord.css
 const README = path.join(ROOT, 'README.md');
+const EXAMPLE = path.join(ROOT, 'examples', 'contrast.html');
 const CDN = 'https://cdn.luccet.dev/themes/v1';
 const CLASSIC = 'classic.css'; // written by hand
 
@@ -405,10 +407,12 @@ function build() {
   return files;
 }
 
+const byTitle = (a, b) => a.title.localeCompare(b.title);
+
 // README.md's table of themes, between <!-- themes --> and <!-- /themes -->.
 function table() {
   const rows = [...FAMILIES]
-    .sort((a, b) => a.title.localeCompare(b.title))
+    .sort(byTitle)
     .map((f) => {
       const files = f.light && f.dark ? [`${f.name}.css`, `${f.name}-light.css`, `${f.name}-dark.css`] : [`${f.name}.css`];
       const modes = f.light && f.dark ? 'light and dark' : f.light ? 'light' : 'dark';
@@ -417,38 +421,63 @@ function table() {
     });
   return ['| Theme | Files | Modes | After |', '|---|---|---|---|', ...rows].join('\n');
 }
+// examples/contrast.html's list of themes, between the same markers in its
+// opening quote: a link to the note in each theme (?theme=NAME, which its head
+// script reads), the light and dark files after the one that follows the
+// reader's setting, and classic.css's own colours last.
+function list() {
+  const link = (text, name) => `[${text}](?theme=${name})`;
+  const items = [...FAMILIES]
+    .sort(byTitle)
+    .map((f) => (f.light && f.dark ? `${link(f.title, f.name)} (${link('light', `${f.name}-light`)}, ${link('dark', `${f.name}-dark`)}),` : `${link(f.title, f.name)},`));
+  return ['Read it in', ...items, `or ${link("classic.css's own colours", 'classic')}.`].join('\n');
+}
+
 const OPEN = '<!-- themes -->';
 const CLOSE = '<!-- /themes -->';
-function withTable(readme) {
-  const a = readme.indexOf(OPEN);
-  const b = readme.indexOf(CLOSE);
-  if (a < 0 || b < a) throw new Error(`README.md has no ${OPEN} … ${CLOSE} block for the table`);
-  return `${readme.slice(0, a + OPEN.length)}\n${table()}\n${readme.slice(b)}`;
+// `text` with `block` between OPEN and CLOSE, each line after the prefix of
+// OPEN's line (a quote's "> ").
+function between(text, block, where) {
+  const a = text.indexOf(OPEN);
+  const b = text.indexOf(CLOSE);
+  if (a < 0 || b < a) throw new Error(`${where} has no ${OPEN} … ${CLOSE} block`);
+  const prefix = text.slice(text.lastIndexOf('\n', a) + 1, a);
+  return `${text.slice(0, a + OPEN.length)}\n${block.replace(/^/gm, prefix)}\n${prefix}${text.slice(b)}`;
 }
+// The pages build.js writes a part of: [file, what, the file as built].
+const pages = () =>
+  [
+    [README, "README.md's table of themes", table()],
+    [EXAMPLE, "examples/contrast.html's list of themes", list()],
+  ].map(([file, what, block]) => {
+    const text = fs.readFileSync(file, 'utf8');
+    return { file, what, text, built: between(text, block, path.relative(ROOT, file)) };
+  });
 
 function main() {
   const files = build();
   const names = Object.keys(files);
   const existing = fs.readdirSync(DIR).filter((n) => n.endsWith('.css') && n !== CLASSIC);
-  const readme = fs.readFileSync(README, 'utf8');
+  const parts = pages();
+  const done = `${names.length} themes, ${parts.map((p) => p.what.replace(/ of themes$/, '')).join(' and ')}`;
   if (process.argv.includes('--check')) {
     const stale = names.filter((n) => !existing.includes(n) || fs.readFileSync(path.join(DIR, n), 'utf8') !== files[n]);
     const extra = existing.filter((n) => !names.includes(n));
-    const table = withTable(readme) !== readme;
-    if (stale.length || extra.length || table) {
+    const old = parts.filter((p) => p.built !== p.text);
+    if (stale.length || extra.length || old.length) {
       if (stale.length) console.log(`✗ not the current build of build.js: ${stale.join(', ')}`);
       if (extra.length) console.log(`✗ a stylesheet build.js does not write: ${extra.join(', ')}`);
-      if (table) console.log("✗ README.md's table of themes is not the current one");
+      for (const p of old) console.log(`✗ ${p.what} is not the current one`);
       console.log('  run node build.js');
       process.exit(1);
     }
-    console.log(`✓ the themes are current: ${names.length} files and README.md's table`);
+    console.log(`✓ the themes are current: ${done}`);
     process.exit(0);
   }
   for (const n of existing) if (!names.includes(n)) fs.unlinkSync(path.join(DIR, n));
   for (const n of names) fs.writeFileSync(path.join(DIR, n), files[n]);
-  fs.writeFileSync(README, withTable(readme));
-  console.log(`wrote ${names.length} themes and README.md's table`);
+  for (const p of parts) fs.writeFileSync(p.file, p.built);
+  console.log(`wrote ${done}`);
 }
 
 module.exports = { FAMILIES, PAGE, CODE, COLOURS, APPLY, CLASSIC, build, table, resolve, onMark, contrast, luminance, isLight };
