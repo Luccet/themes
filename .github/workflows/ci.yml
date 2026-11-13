@@ -1,5 +1,7 @@
-# The themes are the current build of build.js, the README's table too, and
-# every one passes its contrast, print and forced-colors checks.
+# The themes are the current build of build.js, the README's table and the
+# example's list of themes too; every one passes its contrast, print and
+# forced-colors checks; and the examples pass luccet check, from the engine's
+# main branch.
 name: ci
 
 on:
@@ -16,11 +18,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: Luccet/luccet
+          path: .luccet
       - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: node build.js --check
       - run: node test.js
+        env:
+          LUCCET_ROOT: .luccet
 
   # What the pages workflow deploys, built but not deployed: every release
   # with the files package.json's "files" names (tools/site.js).

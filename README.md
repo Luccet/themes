@@ -33,16 +33,26 @@ List [`classic.css`](classic.css), then a color theme, in a note's `data-use` (o
 | Tokyo Night | [`tokyo-night.css`](tokyo-night.css), [`tokyo-night-light.css`](tokyo-night-light.css), [`tokyo-night-dark.css`](tokyo-night-dark.css) | light and dark | [Tokyo Night Day (light) and Night (dark)](https://github.com/folke/tokyonight.nvim) |
 <!-- /themes -->
 
+## Examples
+
+A note that wears the themes, in [`examples/`](examples):
+
+| Example | What it shows |
+|---|---|
+| [`contrast.html`](examples/contrast.html) | how a palette's contrast is checked: headings, links, highlights, struck text, inline code and keys; a listing with line numbers and a highlighted line; tables with captions; quotes; lists and a task list; numbered equations; a figure and a footnote |
+
+It loads [`classic.css`](classic.css) and [`solarized.css`](solarized.css), this repository's copies, so it shows the themes as they are here, and the engine from cdn.luccet.dev. The links at its top show it in every theme: `?theme=NAME` after its address makes a script in its head load `NAME.css` after the others, and `?theme=classic` gives classic.css's own colors; `node build.js` writes that list. Code is left plain: the [code add-on](https://github.com/Luccet/code) colors it with a theme's code colors. Open it in a browser from a clone (the engine comes over the network); `npm test` checks it.
+
 ## Your own theme
 
 Copy a file and change its values. To add a color theme here, add its palette to `build.js`; [`classic.css`](classic.css) is written by hand. Then:
 
 ```sh
-node build.js   # writes the color themes and the table above
-node test.js    # the modes, contrast and prefers-contrast checks, classic.css's too
+node build.js   # writes the color themes, the table above and the example's list of themes
+node test.js    # the modes, contrast and prefers-contrast checks, classic.css's too, and luccet check on the examples
 ```
 
-`npm test` runs `node build.js --check` and `node test.js`, as CI does.
+`npm test` runs `node build.js --check` and `node test.js`, as CI does. The examples' check needs an engine checkout: `../luccet` beside this repository, or the one `LUCCET_ROOT` names.
 
 ## License and credits
 

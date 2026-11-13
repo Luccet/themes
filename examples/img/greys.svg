@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">
+  <!-- The lightest greys that reach 3:1, 4.5:1 and 7:1 on white (WCAG 2's contrast ratio). -->
+  <rect x="0.5" y="0.5" width="599" height="199" rx="6" fill="#ffffff" stroke="#d0d0d0"/>
+  <g font-size="15" fill="#000000">
+    <text x="100" y="34">3:1</text>
+    <text x="300" y="34">4.5:1</text>
+    <text x="500" y="34">7:1</text>
+  </g>
+  <g font-size="56">
+    <text x="100" y="108" fill="#949494">Aa</text>
+    <text x="300" y="108" fill="#767676">Aa</text>
+    <text x="500" y="108" fill="#595959">Aa</text>
+  </g>
+  <g font-size="15">
+    <text x="100" y="140" fill="#949494">large text</text>
+    <text x="300" y="140" fill="#767676">body text</text>
+    <text x="500" y="140" fill="#595959">body text, AAA</text>
+  </g>
+  <g font-size="14" font-family="ui-monospace, Menlo, Consolas, monospace" fill="#000000">
+    <text x="100" y="178">#949494 · 3.03</text>
+    <text x="300" y="178">#767676 · 4.54</text>
+    <text x="500" y="178">#595959 · 7.00</text>
+  </g>
+</svg>

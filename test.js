@@ -10,17 +10,21 @@
 // classic.css: its light and dark palettes pass the same contrast checks,
 // text in a highlight is the text colour, it answers prefers-contrast, and
 // its size is in rem. README.md lists every file. (Print and forced colours
-// are luccet.css's, set !important, so no theme repeats them.)
+// are luccet.css's, set !important, so no theme repeats them.) The notes in
+// examples/ pass luccet check with nothing to report, from an engine
+// checkout: LUCCET_ROOT, or ../luccet beside this repository.
 //
-//   node test.js
+//   LUCCET_ROOT=…/luccet node test.js
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const T = require('./build');
 
 const ROOT = __dirname;
 const DIR = ROOT;
+const ENGINE = path.resolve(process.env.LUCCET_ROOT || path.join(ROOT, '..', 'luccet'));
 
 let failed = 0;
 const results = [];
@@ -140,6 +144,16 @@ test("classic.css: its light and dark palettes pass the same checks; text in a h
 test('README.md lists every file', (p) => {
   const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
   for (const n of [...files, T.CLASSIC]) if (!readme.includes(`](${n})`)) p.push(`${n} is not linked from README.md: run node build.js, or name classic.css`);
+});
+
+test('examples/: every example passes luccet check with nothing to report', (p) => {
+  const cli = path.join(ENGINE, 'luccet-cli.js');
+  if (!fs.existsSync(cli)) return void p.push(`no Luccet engine at ${ENGINE}: set LUCCET_ROOT to a checkout of github.com/Luccet/luccet`);
+  const notes = fs.readdirSync(path.join(ROOT, 'examples')).filter((n) => n.endsWith('.html'));
+  if (!notes.length) return void p.push('examples/ holds no note');
+  const r = spawnSync(process.execPath, [cli, 'check', 'examples'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, NODE_PATH: '' } });
+  const want = `luccet check: ${notes.length} note${notes.length === 1 ? '' : 's'}: 0 errors, 0 warnings, 0 infos`;
+  if (r.status !== 0 || (r.stdout + r.stderr).trim() !== want) p.push(`expected "${want}":\n  ${(r.stdout + r.stderr).trim().split('\n').join('\n  ')}`);
 });
 
 console.log(results.join('\n'));
